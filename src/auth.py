@@ -2,7 +2,7 @@ from src.constants.http_status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_
 from flask import Blueprint, request, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 import validators
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 
 from src.database import User, db
 
@@ -76,5 +76,11 @@ def login():
 
 
 @auth.get("/me")
+@jwt_required()
 def me():
-    return {"user": "me"}
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({
+        'username':user.username,
+        'email': user.email
+    })
